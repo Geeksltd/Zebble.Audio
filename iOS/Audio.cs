@@ -1,10 +1,10 @@
 ﻿namespace Zebble.Device
 {
+    using AVFoundation;
+    using Foundation;
     using System;
     using System.IO;
     using System.Threading.Tasks;
-    using AVFoundation;
-    using Foundation;
 
     partial class Audio
     {

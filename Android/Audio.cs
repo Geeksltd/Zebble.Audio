@@ -1,9 +1,9 @@
 ﻿namespace Zebble.Device
 {
+    using Android.Media;
     using System;
     using System.IO;
     using System.Threading.Tasks;
-    using Android.Media;
 
     static partial class Audio
     {

@@ -1,12 +1,8 @@
 ﻿namespace Zebble.Device
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
     using Windows.Media.Capture;
     using Windows.Media.MediaProperties;
     using Windows.Storage.Streams;
-    using Zebble;
 
     partial class Audio
     {
