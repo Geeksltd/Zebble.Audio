@@ -5,12 +5,12 @@
 
 ![logo]
 
-A Zebble plugin to play or record an audio file.
+A Zebble plugin to play or record audio files.
 
 
 [![NuGet](https://img.shields.io/nuget/v/Zebble.Audio.svg?label=NuGet)](https://www.nuget.org/packages/Zebble.Audio/)
 
-> This plugin makes you able to record voice and save it to the device and play it, in Android, UWP, and IOS.
+> This plugin makes you able to record voice and save it to the device and play it in Android, UWP and iOS.
 
 <br>
 
@@ -24,7 +24,7 @@ A Zebble plugin to play or record an audio file.
 
 ### Api Usage
 
-If you have an audio file and you want to play it, you can just call `Device.Audio.Play()` and provide the relative path of the file, or, If you want to use the microphone to record the user's voice or the surrounding sounds, you can call `Media.Audio.StartRecording()`.
+If you have an audio file and you want to play it, you can just call `Device.Audio.Play()` and provide the relative path of the file, or If you want to use the microphone to record the user's voice or the surrounding sounds, you can call `Media.Audio.StartRecording()`.
 
 ##### Play Audio:
 ```csharp
@@ -44,4 +44,4 @@ byte[] audiodata = await Device.Audio.StopRecording();
 | Play         | Task         | file -> string<br> errorAction -> OnError| x       | x   | x       |
 | StopPlaying  | Task         | errorAction -> OnError| x       | x   | x       |
 | StartRecording  | Task         | errorAction -> OnError| x       | x   | x       |
-| StopRecording  | Task         | -| x       | x   | x       |
+| StopRecording  | Task<byte[]>         | -| x       | x   | x       |
