@@ -10,7 +10,7 @@ A Zebble plugin to play or record audio files.
 
 [![NuGet](https://img.shields.io/nuget/v/Zebble.Audio.svg?label=NuGet)](https://www.nuget.org/packages/Zebble.Audio/)
 
-> This plugin makes you able to record voice and save it to the device and play it in Android, UWP and iOS.
+> This plugin enables you to record voice and save it to the device and play it in Android, UWP and iOS.
 
 <br>
 
