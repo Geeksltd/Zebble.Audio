@@ -9,6 +9,7 @@
     partial class Audio
     {
         static AVAudioPlayer Player;
+        static AVPlayer StreamPlayer;
         static AVAudioRecorder Recorder;
         static FileInfo Recording;
         static double End, CurrentPosition;
@@ -23,6 +24,13 @@
             if (Player.PrepareToPlay())
                 Player.Play();
 
+            return Task.CompletedTask;
+        }
+
+        static Task DoPlayStream(string url)
+        {
+            StreamPlayer = new AVPlayer(NSUrl.FromString(url));
+            StreamPlayer.Play();
             return Task.CompletedTask;
         }
 
@@ -66,6 +74,8 @@
                 Player.Stop();
                 Player.Dispose();
             }
+
+            StreamPlayer?.Dispose();
 
             return Task.CompletedTask;
         }

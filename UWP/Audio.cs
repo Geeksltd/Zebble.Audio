@@ -55,6 +55,16 @@
             });
         }
 
+        static Task DoPlayStream(string url)
+        {
+            return Thread.UI.Run(async () =>
+            {
+                Player = new Windows.Media.Playback.MediaPlayer { AudioCategory = Windows.Media.Playback.MediaPlayerAudioCategory.Media, Volume = 1 };
+                Player.Source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(url));
+                Player.Play();
+            });
+        }
+
         static void StartPlayProgressUpdater(Timer.TimerState state)
         {
             Thread.UI.Run(() =>

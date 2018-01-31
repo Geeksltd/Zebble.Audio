@@ -40,6 +40,17 @@
             return Task.CompletedTask;
         }
 
+        static Task DoPlayStream(string url)
+        {
+            Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(url));
+            Player.SetAudioStreamType(Android.Media.Stream.Music);
+            Player.SetVolume(1.0f, 1.0f);
+            Player.Start();
+            Player.Completion += Player_Completion;         
+
+            return Task.CompletedTask;
+        }
+
         static void Player_Completion(object sender, EventArgs e)
         {
             (sender as MediaPlayer).Perform(x => x.Completion -= Player_Completion);
