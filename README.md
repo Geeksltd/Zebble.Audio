@@ -24,11 +24,14 @@ A Zebble plugin to play or record audio files.
 
 ### Api Usage
 
-If you have an audio file and you want to play it, you can just call `Device.Audio.Play()` and provide the relative path of the file, or If you want to use the microphone to record the user's voice or the surrounding sounds, you can call `Media.Audio.StartRecording()`.
+If you have an audio file and you want to play it, you can just call `Device.Audio.Play()` and provide the relative path of the file or a stream URL, or If you want to use the microphone to record the user's voice or the surrounding sounds, you can call `Media.Audio.StartRecording()`.
 
 ##### Play Audio:
 ```csharp
+//Play audio from device
 Device.Audio.Play("MyFile.mp3");
+//Play audio from URL
+Device.Audio.Play("http://example.com/music/music.mp3");
 ```
 ##### Record Audio:
 ```csharp
@@ -41,7 +44,7 @@ byte[] audiodata = await Device.Audio.StopRecording();
 ### Methods
 | Method       | Return Type  | Parameters                          | Android | iOS | Windows |
 | :----------- | :----------- | :-----------                        | :------ | :-- | :------ |
-| Play         | Task         | file -> string<br> errorAction -> OnError| x       | x   | x       |
+| Play         | Task         | source -> string<br> errorAction -> OnError| x       | x   | x       |
 | StopPlaying  | Task         | errorAction -> OnError| x       | x   | x       |
 | StartRecording  | Task         | errorAction -> OnError| x       | x   | x       |
 | StopRecording  | Task<byte[]>         | -| x       | x   | x       |
