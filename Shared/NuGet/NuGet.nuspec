@@ -2,11 +2,11 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Zebble.Audio</id>
-    <version>1.1.101</version>
+    <version>1.1.106</version>
     <title>Audio for Zebble (Xamarin)</title>
     <projectUrl>https://github.com/Geeksltd/Zebble.Audio</projectUrl>
     <iconUrl>https://raw.githubusercontent.com/Geeksltd/Zebble.Audio/master/Shared/NuGet/Icon.png</iconUrl>
-    <copyright>Copyright © 2018 Geeks Ltd - All rights reserved.</copyright>
+    <copyright>Copyright © 2019 Geeks Ltd - All rights reserved.</copyright>
     <description>A Zebble plugin to play or record audio files.</description>
     <authors>Geeks Ltd</authors>
     <owners>Geeks Ltd</owners>
@@ -15,13 +15,9 @@
   <files>
     <file src="..\..\lib\Zebble.Audio.iOS.*" target="lib\Xamarin.iOS10\" />
     <file src="..\..\lib\Zebble.Audio.Android.*" target="lib\MonoAndroid10\" />
-    
     <file src="..\..\lib\bin\ARM\Release\Zebble.Audio.UWP.*" target="runtimes\win10-arm\lib\uap10.0" />
     <file src="..\..\lib\bin\x64\Release\Zebble.Audio.UWP.*" target="runtimes\win10-x64\lib\uap10.0" />
     <file src="..\..\lib\bin\x86\Release\Zebble.Audio.UWP.*" target="runtimes\win10-x86\lib\uap10.0" />
-
     <file src="..\..\lib\bin\Release\Zebble.Audio.UWP.*" target="ref\uap10.0" />
-  
-
   </files>
 </package>
