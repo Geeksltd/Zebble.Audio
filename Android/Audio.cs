@@ -2,6 +2,7 @@
 {
     using Android.Media;
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@
         const int ENCODING_BIT_RATE = 16, AUDIO_SAMPLING_RATE = 44100;
         static MediaRecorder Recorder;
         static FileInfo Recording;
-        static MediaPlayer Player;
+        static List<MediaPlayer> Players = new List<MediaPlayer>();
 
         public static Task StartRecording(OnError errorAction = OnError.Toast)
         {
@@ -31,40 +32,70 @@
 
         static Task DoPlay(string file)
         {
-            Player = MediaPlayer.Create(Renderer.Context,
-                Android.Net.Uri.Parse(Device.IO.AbsolutePath(file)));
-            Player.SetVolume(1.0f, 1.0f);
-            Player.Start();
-            Player.Completion += Player_Completion;
+            MediaPlayer player = null;
+            try
+            {
+                player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(Device.IO.AbsolutePath(file)));
+                player.SetVolume(1.0f, 1.0f);
+                player.Completion += Player_Completion;
+                player.Start();
+                Players.Add(player);
+            }
+            catch
+            {
+                Dispose(player);
+            }
 
             return Task.CompletedTask;
         }
 
+        static void Dispose(MediaPlayer player)
+        {
+            if (player == null) return;
+
+            Players.Remove(player);
+            player.Completion -= Player_Completion;
+            if (player.IsPlaying) player.Stop();
+            player.Reset();
+            player.Dispose();
+            player = null;
+        }
+
         static Task DoPlayStream(string url)
         {
-            Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(url));
-            Player.SetAudioStreamType(Android.Media.Stream.Music);
-            Player.SetVolume(1.0f, 1.0f);
-            Player.Start();
-            Player.Completion += Player_Completion;         
+            MediaPlayer player = null;
+
+            try
+            {
+                player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(url));
+                player.SetAudioStreamType(Android.Media.Stream.Music);
+                player.SetVolume(1.0f, 1.0f);
+                player.Completion += Player_Completion;
+                player.Start();
+            }
+            catch
+            {
+                Dispose(player);
+            }
 
             return Task.CompletedTask;
         }
 
         static void Player_Completion(object sender, EventArgs e)
         {
-            (sender as MediaPlayer).Perform(x => x.Completion -= Player_Completion);
+            var player = (sender as MediaPlayer);
+            if (player != null)
+            {
+                player.Completion -= Player_Completion;
+                Dispose(player);
+            }
+
             PlayingCompleted.RaiseOn(Thread.Pool);
         }
 
         static Task DoStopPlaying()
         {
-            if (Player?.IsPlaying == true)
-            {
-                Player.Stop();
-                Player.Dispose();
-            }
-
+            Players.ToArray().Do(Dispose);
             return Task.CompletedTask;
         }
 
