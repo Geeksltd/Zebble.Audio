@@ -8,77 +8,10 @@
 
     partial class Audio
     {
-        static AVAudioPlayer Player;
-        static AVPlayer StreamPlayer;
         static AVAudioRecorder Recorder;
         static FileInfo Recording;
-        static double End, CurrentPosition;
 
-        static Task DoPlay(string file)
-        {
-            Player = new AVAudioPlayer(new NSUrl(Device.IO.AbsolutePath(file)), "wav", out var err) { Volume = 1.0F };
-            if (err?.Description.HasValue() == true) throw new Exception(err.Description);
-
-            Player.FinishedPlaying += Player_FinishedPlaying;
-
-            if (Player.PrepareToPlay())
-                Player.Play();
-
-            return Task.CompletedTask;
-        }
-
-        static Task DoPlayStream(string url)
-        {
-            StreamPlayer = new AVPlayer(NSUrl.FromString(url));
-            StreamPlayer.Play();
-            return Task.CompletedTask;
-        }
-
-        static void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
-        {
-            (sender as AVAudioPlayer).Perform(x => x.FinishedPlaying -= Player_FinishedPlaying);
-            PlayingCompleted.RaiseOn(Thread.Pool);
-        }
-
-        static Task DoPlay(string file, TimeSpan start, TimeSpan end)
-        {
-            Player = new AVAudioPlayer(new NSUrl(Device.IO.AbsolutePath(file)), "wav", out var err) { Volume = 1 };
-            if (err?.Description.HasValue() == true) throw new Exception(err.Description);
-            CurrentPosition = start.TotalSeconds;
-            End = end.TotalSeconds;
-            Player.CurrentTime = CurrentPosition;
-            Player.Play();
-
-            var timer = new Timer(TimeSpan.FromSeconds(1));
-            timer.TickAction += StartPlayProgressUpdater;
-
-            return Task.CompletedTask;
-        }
-
-        static void StartPlayProgressUpdater(Timer.TimerState state)
-        {
-            CurrentPosition = Player.CurrentTime;
-
-            if (CurrentPosition < End) return;
-
-            Player.Stop();
-            Player.Dispose();
-            CurrentPosition = 0;
-            state.Timer.Dispose();
-        }
-
-        static Task DoStopPlaying()
-        {
-            if (Player?.Playing == true)
-            {
-                Player.Stop();
-                Player.Dispose();
-            }
-
-            StreamPlayer?.Dispose();
-
-            return Task.CompletedTask;
-        }
+        static BaseThread AudioThread => Thread.UI;
 
         public static byte[] RecordedBytes => Recording?.ReadAllBytes() ?? new byte[0];
 

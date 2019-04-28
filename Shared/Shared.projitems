@@ -17,6 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Audio.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AudioPlayer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Timer.cs" />
   </ItemGroup>
 </Project>
