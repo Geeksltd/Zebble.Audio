@@ -47,12 +47,7 @@
 
         void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
         {
-            UIThread.Dispatcher.BeginInvokeOnMainThread(() =>
-            {
-                Player.FinishedPlaying -= Player_FinishedPlaying;
-                Dispose();
-            });
-
+            Dispose();
             Completion.TrySetResult(true);
         }
 
@@ -64,9 +59,11 @@
 
             player.DecoderError -= Player_DecoderError;
             player.FinishedPlaying -= Player_FinishedPlaying;
-            try { player.Stop(); } catch { }
-
-            player.Dispose();
+            Thread.UI.RunAction(() =>
+            {
+                try { player.Stop(); } catch { }
+                player.Dispose();
+            });
         }
     }
 }
