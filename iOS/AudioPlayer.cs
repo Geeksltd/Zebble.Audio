@@ -47,8 +47,12 @@
 
         void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
         {
-            Player.FinishedPlaying -= Player_FinishedPlaying;
-            Dispose();
+            UIThread.Dispatcher.BeginInvokeOnMainThread(() =>
+            {
+                Player.FinishedPlaying -= Player_FinishedPlaying;
+                Dispose();
+            });
+
             Completion.TrySetResult(true);
         }
 
