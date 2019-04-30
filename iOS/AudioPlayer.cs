@@ -47,7 +47,7 @@
 
         void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
         {
-            Dispose();
+            Thread.UI.Post(() => Dispose());
             Completion.TrySetResult(true);
         }
 
@@ -59,11 +59,9 @@
 
             player.DecoderError -= Player_DecoderError;
             player.FinishedPlaying -= Player_FinishedPlaying;
-            Thread.UI.RunAction(() =>
-            {
-                try { player.Stop(); } catch { }
-                player.Dispose();
-            });
+
+            try { player.Stop(); } catch { }
+            player.Dispose();
         }
     }
 }
