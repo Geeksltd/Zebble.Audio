@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="Audio.cs" />
     <Compile Include="AudioPlayer.cs" />
+    <Compile Include="IOSAudioPlayer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Zebble-LicenseAgreement.txt" />

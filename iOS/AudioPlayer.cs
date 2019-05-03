@@ -10,9 +10,10 @@
     {
         static AVAudioPlayer Player;
 
-        public async Task<bool> PlayFile()
+        public async Task<bool> PlayFile(NSUrl url = null)
         {
-            Player = new AVAudioPlayer(new NSUrl(Device.IO.AbsolutePath(File)), "wav", out var err) { Volume = 1.0F };
+            var source = url ?? new NSUrl(Device.IO.AbsolutePath(File));
+            Player = new AVAudioPlayer(source, "wav", out var err) { Volume = 1.0F };
             if (err?.Description.HasValue() == true) throw new Exception(err.Description);
 
             Player.FinishedPlaying += Player_FinishedPlaying;
@@ -32,11 +33,23 @@
             //StreamPlayer = new AVPlayer(NSUrl.FromString(File));
             //StreamPlayer.CurrentItem.AddObserver(...)
             //StreamPlayer.Play();
+            //--->
+            //Implemented but it has some problems yet.
+            //StreamPlayer = new IOSAudioPlayer(File);
 
             // Workaround for now:
-            var file = Device.IO.Cache.GetFile(Guid.NewGuid().ToString());
-            await Network.Download(File.AsUri(), file.FullName);
-            await PlayFile();
+            var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(new NSUrl(File), new NSUrlDownloadSessionResponse((url, response, err) =>
+            {
+                if (err?.Description.HasValue() == true)
+                {
+                    Log.Error("Failed to play " + File + "\n" + err.Description);
+                    return;
+                }
+
+                PlayFile(url).RunInParallel();
+            }));
+
+            downloadTask.Resume();
         }
 
         void Player_DecoderError(object sender, AVErrorEventArgs e)
