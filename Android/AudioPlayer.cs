@@ -12,7 +12,8 @@ namespace Zebble.Device
         {
             try
             {
-                Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(Device.IO.AbsolutePath(File)));
+                var audioFile = $"file://{IO.AbsolutePath(File)}";
+                Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(audioFile));
                 if (Player == null) throw new Exception("Failed to play " + File);
                 Player.SetVolume(1.0f, 1.0f);
                 Player.Completion += Player_Completion;
@@ -33,7 +34,12 @@ namespace Zebble.Device
             try
             {
                 Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(File));
-                Player.SetAudioStreamType(Android.Media.Stream.Music);
+                if (OS.IsAtLeast(Android.OS.BuildVersionCodes.O))
+                {
+                    var attributes = new AudioAttributes.Builder().SetLegacyStreamType(Stream.Music).Build();
+                    Player.SetAudioAttributes(attributes);
+                }
+                else Player.SetAudioStreamType(Stream.Music);
                 Player.SetVolume(1.0f, 1.0f);
                 Player.Completion += Player_Completion;
                 Player.Error += Player_Error;
@@ -69,9 +75,13 @@ namespace Zebble.Device
             player.Completion -= Player_Completion;
             player.Error -= Player_Error;
             if (player.IsPlaying) player.Stop();
-            player.Reset();
-            player.Dispose();
-            player = null;
+
+            Thread.UI.Post(() =>
+            {
+                player.Reset();
+                player.Dispose();
+                player = null;
+            });
         }
     }
 }
