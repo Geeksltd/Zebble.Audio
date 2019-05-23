@@ -12,13 +12,13 @@
 
         public static async Task Play(string source, OnError errorAction = OnError.Toast)
         {
-            try { await AudioThread.Run(() => DoPlay(source)); }
+            try { AudioThread.Post(async () => await DoPlay(source)); }
             catch (Exception ex) { await errorAction.Apply(ex, "Failed to play audio file"); }
         }
 
         public static async Task StopPlaying(OnError errorAction = OnError.Toast)
         {
-            try { await AudioThread.Run(DoStopPlaying); }
+            try { AudioThread.Post(async () => await DoStopPlaying()); }
             catch (Exception ex) { await errorAction.Apply(ex, "Failed to stop playing audio."); }
         }
 
