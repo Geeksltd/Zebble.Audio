@@ -10,16 +10,36 @@
 
         public static readonly AsyncEvent PlayingCompleted = new AsyncEvent();
 
-        public static async Task Play(string source, OnError errorAction = OnError.Toast)
+        public static Task Play(string source, OnError errorAction = OnError.Toast)
         {
-            try { AudioThread.Post(async () => await DoPlay(source)); }
-            catch (Exception ex) { await errorAction.Apply(ex, "Failed to play audio file"); }
+            return ExecuteSafe(() => DoPlay(source), errorAction, "Failed to play audio file");
         }
 
-        public static async Task StopPlaying(OnError errorAction = OnError.Toast)
+        public static Task StopPlaying(OnError errorAction = OnError.Toast)
         {
-            try { AudioThread.Post(async () => await DoStopPlaying()); }
-            catch (Exception ex) { await errorAction.Apply(ex, "Failed to stop playing audio."); }
+            return ExecuteSafe(DoStopPlaying, errorAction, "Failed to stop playing audio.");
+        }
+
+        static Task ExecuteSafe(Func<Task> execution, OnError errorAction, string errorMessage)
+        {
+            var task = new TaskCompletionSource<bool>();
+
+            AudioThread.Post(async () =>
+            {
+                try
+                {
+                    await execution();
+                    task.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    await errorAction.Apply(ex, "Failed to play audio file");
+                    if (errorAction == OnError.Throw) task.TrySetException(ex);
+                    else task.TrySetResult(false);
+                }
+            });
+
+            return task.Task;
         }
 
         static async Task DoPlay(string file)
