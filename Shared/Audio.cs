@@ -33,9 +33,12 @@
                 }
                 catch (Exception ex)
                 {
-                    await errorAction.Apply(ex, "Failed to play audio file");
                     if (errorAction == OnError.Throw) task.TrySetException(ex);
-                    else task.TrySetResult(false);
+                    else
+                    {
+                        await errorAction.Apply(ex, "Failed to play audio file");
+                        task.TrySetResult(false);
+                    }
                 }
             });
 

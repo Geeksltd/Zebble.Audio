@@ -34,6 +34,7 @@ namespace Zebble.Device
             try
             {
                 Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(File));
+                if (Player == null) throw new Exception("Audio not accessible: " + File);
                 if (OS.IsAtLeast(Android.OS.BuildVersionCodes.O))
                 {
                     var attributes = new AudioAttributes.Builder().SetLegacyStreamType(Stream.Music).Build();
