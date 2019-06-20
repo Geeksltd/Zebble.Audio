@@ -12,12 +12,7 @@ namespace Zebble.Device
         {
             try
             {
-                var audioFile = $"file://{IO.AbsolutePath(File)}";
-                Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(audioFile));
-                if (Player == null) throw new Exception("Failed to play " + File);
-                Player.SetVolume(1.0f, 1.0f);
-                Player.Completion += Player_Completion;
-                Player.Error += Player_Error;
+                Create($"file://{IO.AbsolutePath(File)}");
                 Player.Start();
             }
             catch
@@ -29,21 +24,28 @@ namespace Zebble.Device
             return await Completion.Task;
         }
 
+        void Create(string url)
+        {
+            Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(url));
+            if (Player == null) throw new Exception("Audio not accessible: " + File);
+            Player.SetVolume(1.0f, 1.0f);
+            Player.Completion += Player_Completion;
+            Player.Error += Player_Error;
+        }
+
         public Task PlayStream()
         {
             try
             {
-                Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(File));
-                if (Player == null) throw new Exception("Audio not accessible: " + File);
+                Create(File);
+
                 if (OS.IsAtLeast(Android.OS.BuildVersionCodes.O))
                 {
                     var attributes = new AudioAttributes.Builder().SetLegacyStreamType(Stream.Music).Build();
                     Player.SetAudioAttributes(attributes);
                 }
                 else Player.SetAudioStreamType(Stream.Music);
-                Player.SetVolume(1.0f, 1.0f);
-                Player.Completion += Player_Completion;
-                Player.Error += Player_Error;
+
                 Player.Start();
             }
             catch
@@ -75,14 +77,15 @@ namespace Zebble.Device
 
             player.Completion -= Player_Completion;
             player.Error -= Player_Error;
-            if (player.IsPlaying) player.Stop();
 
-            Thread.UI.Post(() =>
+            void kill()
             {
-                player.Reset();
-                player.Dispose();
-                player = null;
-            });
+                if (player.IsPlaying) player.Stop();
+                player.Release();
+            }
+
+            if (Thread.UI.IsRunning()) kill();
+            else Thread.UI.Post(kill);
         }
     }
 }
