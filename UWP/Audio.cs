@@ -11,9 +11,7 @@
     {
         static MediaCapture Capture;
         static InMemoryRandomAccessStream Buffer;
-
-        static BaseThread AudioThread => Thread.UI;
-
+        
         public static async Task StartRecording(OnError errorAction = OnError.Toast)
         {
             try { await Thread.Pool.Run(() => DoStartRecording()); }

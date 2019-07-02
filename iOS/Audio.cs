@@ -11,7 +11,7 @@
         static AVAudioRecorder Recorder;
         static FileInfo Recording;
 
-        static BaseThread AudioThread => Thread.UI;
+        
 
         public static byte[] RecordedBytes => Recording?.ReadAllBytes() ?? new byte[0];
 

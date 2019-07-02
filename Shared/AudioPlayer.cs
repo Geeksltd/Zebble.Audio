@@ -6,19 +6,54 @@ using System.Threading.Tasks;
 
 namespace Zebble.Device
 {
-    partial class AudioPlayer
+    public partial class AudioPlayer : IDisposable
     {
-        TaskCompletionSource<bool> Completion = new TaskCompletionSource<bool>();
-        string File;
+        TaskCompletionSource<bool> Ended = new TaskCompletionSource<bool>();
 
-        public AudioPlayer(string file) { File = file; }
+        public readonly AsyncEvent Completed = new AsyncEvent();
 
-        partial void Dispose();
-
-        public void Stop()
+        public Task Play(string source, OnError errorAction = OnError.Toast)
         {
-            Dispose();
-            Completion.TrySetResult(false);
+            return ExecuteSafe(() => DoPlay(source), errorAction, "Failed to play audio file");
+        }
+
+        public Task Stop(OnError errorAction = OnError.Toast)
+        {
+            return ExecuteSafe(StopPlaying, errorAction, "Failed to stop playing audio.");
+        }
+
+        Task ExecuteSafe(Func<Task> execution, OnError errorAction, string errorMessage)
+        {
+            var task = new TaskCompletionSource<bool>();
+
+            AudioThread.Post(async () =>
+            {
+                try
+                {
+                    await execution();
+                    task.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    if (errorAction == OnError.Throw) task.TrySetException(ex);
+                    else
+                    {
+                        await errorAction.Apply(ex, "Failed to play audio file");
+                        task.TrySetResult(false);
+                    }
+                }
+            });
+
+            return task.Task;
+        }
+
+        async Task DoPlay(string file)
+        {
+            await Stop(OnError.Ignore);
+
+            if (file.IsUrl()) await PlayStream(file);
+            else await PlayFile(file);
+            await Completed.RaiseOn(Thread.Pool);
         }
     }
 }

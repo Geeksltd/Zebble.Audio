@@ -10,10 +10,17 @@
     {
         static AVAudioPlayer Player;
 
+        static BaseThread AudioThread => Thread.UI;
+
+        public Task<bool> PlayFile(string file)
+        {
+            var url = new NSUrl(Device.IO.AbsolutePath(file));
+            return PlayFile(url);
+        }
+
         public async Task<bool> PlayFile(NSUrl url = null)
         {
-            var source = url ?? new NSUrl(Device.IO.AbsolutePath(File));
-            Player = new AVAudioPlayer(source, "wav", out var err) { Volume = 1.0F };
+            Player = new AVAudioPlayer(url, "wav", out var err) { Volume = 1.0F };
             if (err?.Description.HasValue() == true) throw new Exception(err.Description);
 
             Player.FinishedPlaying += Player_FinishedPlaying;
@@ -22,12 +29,12 @@
             if (Player.PrepareToPlay())
             {
                 Player.Play();
-                return await Completion.Task;
+                return await Ended.Task;
             }
-            else throw new Exception("Failed to play " + File);
+            else throw new Exception("Failed to play " + url);
         }
 
-        public async Task PlayStream()
+        public async Task PlayStream(string url)
         {
             // TODO: Implement it using AVPlayer in a way to handle error and completion events.
             //StreamPlayer = new AVPlayer(NSUrl.FromString(File));
@@ -38,15 +45,15 @@
             //StreamPlayer = new IOSAudioPlayer(File);
 
             // Workaround for now:
-            var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(new NSUrl(File), new NSUrlDownloadSessionResponse((url, response, err) =>
+            var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(new NSUrl(url), new NSUrlDownloadSessionResponse((u, response, err) =>
             {
                 if (err?.Description.HasValue() == true)
                 {
-                    Log.Error("Failed to play " + File + "\n" + err.Description);
+                    Log.Error("Failed to play audio\n" + err.Description);
                     return;
                 }
 
-                PlayFile(url).RunInParallel();
+                PlayFile(u).RunInParallel();
             }));
 
             downloadTask.Resume();
@@ -54,27 +61,34 @@
 
         void Player_DecoderError(object sender, AVErrorEventArgs e)
         {
-            Dispose();
-            Completion.TrySetException(new Exception("Failed to play " + File + " > " + e.Error.Description));
+            Ended.TrySetException(new Exception("Failed to play audio > " + e.Error.Description));
         }
 
         void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
         {
-            Thread.UI.Post(() => Dispose());
-            Completion.TrySetResult(true);
+            Ended.TrySetResult(true);
         }
 
-        partial void Dispose()
+        public Task StopPlaying()
         {
-            var player = Player;
-            Player = null;
-            if (player == null) return;
+            Player?.Stop();
+            return Task.CompletedTask;
+        }
 
-            player.DecoderError -= Player_DecoderError;
-            player.FinishedPlaying -= Player_FinishedPlaying;
+        public void Dispose()
+        {
+            Thread.UI.Post(() =>
+            {
+                var player = Player;
+                Player = null;
+                if (player == null) return;
 
-            try { player.Stop(); } catch { }
-            player.Dispose();
+                player.DecoderError -= Player_DecoderError;
+                player.FinishedPlaying -= Player_FinishedPlaying;
+
+                try { player.Stop(); } catch { }
+                player.Dispose();
+            });
         }
     }
 }

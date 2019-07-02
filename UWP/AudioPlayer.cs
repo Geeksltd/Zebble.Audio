@@ -11,57 +11,52 @@
     {
         Windows.Media.Playback.MediaPlayer Player;
 
-        public async Task<bool> PlayFile()
+        public AudioPlayer()
         {
-            var storage = await Device.IO.File(File).ToStorageFile();
+            Player = new Windows.Media.Playback.MediaPlayer
+            {
+                Volume = 1,
+                AudioCategory = Windows.Media.Playback.MediaPlayerAudioCategory.Media,
+            };
+            Player.MediaEnded += Player_MediaEnded;
+            Player.MediaFailed += Player_MediaFailed;
+        }
+
+        static BaseThread AudioThread => Thread.UI;
+
+        public async Task<bool> PlayFile(string file)
+        {
+            var storage = await Device.IO.File(file).ToStorageFile();
             var source = Windows.Media.Core.MediaSource.CreateFromStorageFile(storage);
 
             return await Play(source);
         }
 
-        public async Task PlayStream()
+        public async Task PlayStream(string url)
         {
-            var source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(File));
+            var source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(url));
             await Play(source);
         }
 
         async Task<bool> Play(Windows.Media.Playback.IMediaPlaybackSource source)
         {
-            Player = new Windows.Media.Playback.MediaPlayer
-            {
-                AudioCategory = Windows.Media.Playback.MediaPlayerAudioCategory.Media,
-                Volume = 1
-            };
+            Player.Source = source;
+            Player.Play();
 
-            try
-            {
-                Player.Source = source;
-                Player.MediaEnded += Player_MediaEnded;
-                Player.MediaFailed += Player_MediaFailed;
-                Player.Play();
-            }
-            catch
-            {
-                Dispose();
-                throw;
-            }
-
-            return await Completion.Task;
+            return await Ended.Task;
         }
 
         void Player_MediaEnded(Windows.Media.Playback.MediaPlayer sender, object args)
         {
-            Dispose();
-            Completion.TrySetResult(true);
+            Ended.TrySetResult(true);
         }
 
         void Player_MediaFailed(Windows.Media.Playback.MediaPlayer sender, Windows.Media.Playback.MediaPlayerFailedEventArgs args)
         {
-            Dispose();
-            Completion.TrySetException(new Exception("Failed to play " + File + " > " + args.ErrorMessage));
+            Ended.TrySetException(new Exception("Failed to play audio > " + args.ErrorMessage));
         }
 
-        partial void Dispose()
+        public void Dispose()
         {
             var player = Player;
             Player = null;
@@ -72,6 +67,14 @@
             try { player.Pause(); } catch { }
 
             player.Dispose();
+        }
+
+        Task StopPlaying()
+        {
+            if (Player?.PlaybackSession?.CanPause == true)
+                Player?.Pause();
+
+            return Task.CompletedTask;
         }
     }
 }

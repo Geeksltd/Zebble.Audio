@@ -8,72 +8,73 @@ namespace Zebble.Device
     {
         MediaPlayer Player;
 
-        public async Task<bool> PlayFile()
-        {
-            try
-            {
-                Create($"file://{IO.AbsolutePath(File)}");
-                Player.Start();
-            }
-            catch
-            {
-                Dispose();
-                throw;
-            }
+        static BaseThread AudioThread => Thread.Pool;
 
-            return await Completion.Task;
-        }
-
-        void Create(string url)
+        public AudioPlayer()
         {
-            Player = MediaPlayer.Create(Renderer.Context, Android.Net.Uri.Parse(url));
-            if (Player == null) throw new Exception("Audio not accessible: " + File);
+            Player = new MediaPlayer();
             Player.SetVolume(1.0f, 1.0f);
             Player.Completion += Player_Completion;
             Player.Error += Player_Error;
         }
 
-        public Task PlayStream()
+        Task StopPlaying()
+        {
+            Player?.Stop();
+            Ended.TrySetResult(false);
+            return Task.CompletedTask;
+        }
+
+        public async Task<bool> PlayFile(string file)
+        {
+            await SetSource($"file://{IO.AbsolutePath(file)}");
+            Player.Start();
+
+            return await Ended.Task;
+        }
+
+        public async Task PlayStream(string url)
+        {
+            await SetSource(url);
+
+            if (OS.IsAtLeast(Android.OS.BuildVersionCodes.O))
+            {
+                var attributes = new AudioAttributes.Builder().SetLegacyStreamType(Stream.Music).Build();
+                Player.SetAudioAttributes(attributes);
+            }
+
+            Player.Start();
+        }
+
+        async Task SetSource(string url)
         {
             try
             {
-                Create(File);
-
-                if (OS.IsAtLeast(Android.OS.BuildVersionCodes.O))
-                {
-                    var attributes = new AudioAttributes.Builder().SetLegacyStreamType(Stream.Music).Build();
-                    Player.SetAudioAttributes(attributes);
-                }
-                else Player.SetAudioStreamType(Stream.Music);
-
-                Player.Start();
+                Player.Stop();
+                Player.Reset();
+                await Player.SetDataSourceAsync(Renderer.Context, Android.Net.Uri.Parse(url));
+                Player.Prepare();
             }
-            catch
+            catch (Exception ex)
             {
-                Dispose();
-                throw;
+                throw new Exception("Audio not accessible: " + url, ex);
             }
-
-            return Completion.Task;
         }
 
-        void Player_Completion(object sender, EventArgs e)
-        {
-            Dispose();
-            Completion.TrySetResult(true);
-        }
+        void Player_Completion(object sender, EventArgs e) => Ended.TrySetResult(true);
 
         void Player_Error(object sender, MediaPlayer.ErrorEventArgs e)
         {
-            Dispose();
-            Completion.TrySetException(new Exception("Failed to play " + File + " > " + e.What));
+            Ended.TrySetException(new Exception("Failed to play audio > " + e.What));
         }
 
-        partial void Dispose()
+        public void Dispose()
         {
             var player = Player;
             Player = null;
             if (player == null) return;
+
+            Completed?.Dispose();
 
             player.Completion -= Player_Completion;
             player.Error -= Player_Error;

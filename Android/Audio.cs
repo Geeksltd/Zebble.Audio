@@ -36,9 +36,7 @@
             try { Recorder?.Stop(); return Task.FromResult(RecordedBytes); }
             finally { Recorder?.Release(); Recorder = null; }
         }
-
-        static BaseThread AudioThread => Thread.Pool;
-
+        
         static void CreateRecorder()
         {
             if (Recorder == null) Recorder = new MediaRecorder();
