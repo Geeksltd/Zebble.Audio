@@ -20,8 +20,15 @@
 
         public async Task<bool> PlayFile(NSUrl url = null)
         {
-            Player = new AVAudioPlayer(url, "wav", out var err) { Volume = 1.0F };
-            if (err?.Description.HasValue() == true) throw new Exception(err.Description);
+            try
+            {
+                Player = new AVAudioPlayer(url, "wav", out var err) { Volume = 1.0F };
+                if (err?.Description.HasValue() == true) return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
 
             Player.FinishedPlaying += Player_FinishedPlaying;
             Player.DecoderError += Player_DecoderError;
