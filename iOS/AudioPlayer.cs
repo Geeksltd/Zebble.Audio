@@ -34,7 +34,7 @@
             else throw new Exception("Failed to play " + url);
         }
 
-        public async Task PlayStream(string url)
+        public Task PlayStream(string url)
         {
             // TODO: Implement it using AVPlayer in a way to handle error and completion events.
             //StreamPlayer = new AVPlayer(NSUrl.FromString(File));
@@ -43,6 +43,8 @@
             //--->
             //Implemented but it has some problems yet.
             //StreamPlayer = new IOSAudioPlayer(File);
+
+            var result = new TaskCompletionSource<bool>();
 
             // Workaround for now:
             var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(new NSUrl(url), new NSUrlDownloadSessionResponse((u, response, err) =>
@@ -53,10 +55,20 @@
                     return;
                 }
 
-                PlayFile(u).RunInParallel();
+                try
+                {
+                    PlayFile(u).RunInParallel();
+                    result.TrySetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    result.TrySetException(ex);
+                }
             }));
 
             downloadTask.Resume();
+
+            return result.Task;
         }
 
         void Player_DecoderError(object sender, AVErrorEventArgs e)
