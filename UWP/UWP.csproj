@@ -118,7 +118,7 @@
       <Version>6.0.6</Version>
     </PackageReference>
     <PackageReference Include="Zebble">
-      <Version>4.4.242</Version>
+      <Version>4.4.250</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
