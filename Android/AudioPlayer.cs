@@ -21,7 +21,7 @@ namespace Zebble.Device
         Task StopPlaying()
         {
             Player?.Stop();
-            Ended.TrySetResult(false);
+            Thread.Pool.RunAction(() => Ended.TrySetResult(false));
             return Task.CompletedTask;
         }
 
@@ -61,11 +61,11 @@ namespace Zebble.Device
             }
         }
 
-        void Player_Completion(object sender, EventArgs e) => Ended.TrySetResult(true);
+        void Player_Completion(object sender, EventArgs e) => Thread.Pool.RunAction(() => Ended.TrySetResult(true));
 
         void Player_Error(object sender, MediaPlayer.ErrorEventArgs e)
         {
-            Ended.TrySetException(new Exception("Failed to play audio > " + e.What));
+            Thread.Pool.RunAction(() => Ended.TrySetException(new Exception("Failed to play audio > " + e.What)));
         }
 
         public void Dispose()

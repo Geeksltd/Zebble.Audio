@@ -51,6 +51,8 @@ namespace Zebble.Device
         {
             await Stop(OnError.Ignore);
 
+            Ended = new TaskCompletionSource<bool>();
+
             if (file.IsUrl()) await PlayStream(file);
             else await PlayFile(file);
             await Completed.RaiseOn(Thread.Pool);
