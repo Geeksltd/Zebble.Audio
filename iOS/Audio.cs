@@ -11,8 +11,6 @@
         static AVAudioRecorder Recorder;
         static FileInfo Recording;
 
-        
-
         public static byte[] RecordedBytes => Recording?.ReadAllBytes() ?? new byte[0];
 
         public static async Task StartRecording(OnError errorAction = OnError.Toast)
@@ -34,17 +32,24 @@
             catch (Exception ex) { await errorAction.Apply(ex); }
         }
 
-        static void CreateRecorder()
+        public static void ConfigureAudio(AVAudioSessionCategory mode)
         {
             var session = AVAudioSession.SharedInstance();
 
-            var err = session.SetCategory(AVAudioSessionCategory.PlayAndRecord);
-            if (err != null) throw new Exception("Failed to initiate the recorder: " + err.Description);
+            var err = session.SetCategory(mode);
+            if (err != null)
+                throw new Exception("Failed to initiate the recorder: " + err.Description);
 
             err = session.SetActive(beActive: true);
-            if (err != null) throw new Exception("Failed to activate the recorder: " + err.Description);
+            if (err != null)
+                throw new Exception("Failed to activate the recorder: " + err.Description);
+        }
 
-            Recorder = AVAudioRecorder.Create(NSUrl.FromFilename(Recording.FullName), GetSettings(), out err);
+        static void CreateRecorder()
+        {
+            ConfigureAudio(AVAudioSessionCategory.PlayAndRecord);
+
+            Recorder = AVAudioRecorder.Create(NSUrl.FromFilename(Recording.FullName), GetSettings(), out var err);
             if (err != null) throw new Exception("Could not create a recorder because: " + err.Description);
         }
 
