@@ -35,7 +35,8 @@
 
             if (Player.PrepareToPlay())
             {
-                Player.Play();
+                Audio.ConfigureAudio(AVAudioSessionCategory.Playback);
+                var result = Player.Play();
                 return await Ended.Task;
             }
             else throw new Exception("Failed to play " + url);
