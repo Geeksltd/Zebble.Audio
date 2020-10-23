@@ -61,7 +61,11 @@ namespace Zebble.Device
             }
         }
 
-        void Player_Completion(object sender, EventArgs e) => Thread.Pool.RunAction(() => Ended.TrySetResult(true));
+        void Player_Completion(object sender, EventArgs e) => Thread.Pool.RunAction(async () =>
+        {
+            Ended.TrySetResult(true);
+            await Completed.Raise();
+        });
 
         void Player_Error(object sender, MediaPlayer.ErrorEventArgs e)
         {

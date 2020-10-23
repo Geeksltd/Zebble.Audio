@@ -30,7 +30,7 @@
                 return false;
             }
 
-            Player.FinishedPlaying += Player_FinishedPlaying;
+            Player.FinishedPlaying += async (object sender, AVStatusEventArgs args) => await Player_FinishedPlaying(sender, args);
             Player.DecoderError += Player_DecoderError;
 
             if (Player.PrepareToPlay())
@@ -84,9 +84,10 @@
             Ended.TrySetException(new Exception("Failed to play audio > " + e.Error.Description));
         }
 
-        void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
+        async Task Player_FinishedPlaying(object sender, AVStatusEventArgs e)
         {
             Ended.TrySetResult(true);
+            await Completed.Raise();
         }
 
         public Task StopPlaying()
@@ -104,7 +105,7 @@
                 if (player == null) return;
 
                 player.DecoderError -= Player_DecoderError;
-                player.FinishedPlaying -= Player_FinishedPlaying;
+                player.FinishedPlaying -= async (object sender, AVStatusEventArgs args) => await Player_FinishedPlaying(sender, args);
 
                 try { player.Stop(); } catch { }
                 player.Dispose();
