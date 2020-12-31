@@ -2,9 +2,9 @@
 {
     using Android.Media;
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
+    using Olive;
 
     static partial class Audio
     {
@@ -16,11 +16,14 @@
         {
             try
             {
-                if (Recording?.Exists() == true) Recording.SyncDelete();
+                if (Recording?.Exists() == true)
+                    lock (Recording.GetSyncLock())
+                        Recording.Delete();
 
                 var newFile = $"Myfile{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}.wav";
                 Recording = IO.CreateTempDirectory().GetFile(newFile);
-                Recording.SyncDelete();
+                lock (Recording.GetSyncLock())
+                    Recording.Delete();
 
                 CreateRecorder();
                 Recorder.Start();
@@ -36,7 +39,7 @@
             try { Recorder?.Stop(); return Task.FromResult(RecordedBytes); }
             finally { Recorder?.Release(); Recorder = null; }
         }
-        
+
         static void CreateRecorder()
         {
             if (Recorder == null) Recorder = new MediaRecorder();

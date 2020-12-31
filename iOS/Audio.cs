@@ -5,6 +5,7 @@
     using System;
     using System.IO;
     using System.Threading.Tasks;
+    using Olive;
 
     partial class Audio
     {
@@ -19,11 +20,14 @@
             {
                 await StopRecording();
 
-                if (Recording?.Exists() == true) Recording.SyncDelete();
+                if (Recording?.Exists() == true)
+                    lock (Recording.GetSyncLock())
+                        Recording.Delete();
 
                 var newFile = $"Myfile{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}.wav";
                 Recording = Device.IO.CreateTempDirectory().GetFile(newFile);
-                Recording.SyncDelete();
+                lock (Recording.GetSyncLock())
+                    Recording.Delete();
 
                 CreateRecorder();
 

@@ -4,6 +4,7 @@
     using Foundation;
     using System;
     using UIKit;
+    using Olive;
 
     internal class IOSAudioPlayer : UIView
     {

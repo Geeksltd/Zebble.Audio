@@ -6,6 +6,7 @@
     using Windows.Media.Capture;
     using Windows.Media.MediaProperties;
     using Windows.Storage.Streams;
+    using Olive;
 
     partial class Audio
     {

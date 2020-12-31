@@ -1,4 +1,4 @@
-[logo]: https://raw.githubusercontent.com/Geeksltd/Zebble.Audio/master/Shared/NuGet/Icon.png "Zebble.Audio"
+﻿[logo]: https://raw.githubusercontent.com/Geeksltd/Zebble.Audio/master/icon.png "Zebble.Audio"
 
 
 ## Zebble.Audio
