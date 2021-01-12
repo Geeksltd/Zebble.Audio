@@ -60,7 +60,7 @@
             {
                 if (err?.Description.HasValue() == true)
                 {
-                    Log.For(this).Error(null, "Failed to play audio\n" + err.Description);
+                    Log.For(this).Error("Failed to play audio\n" + err.Description);
                     return;
                 }
 
