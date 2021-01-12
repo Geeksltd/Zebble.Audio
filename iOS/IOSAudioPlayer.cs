@@ -35,8 +35,8 @@
                     return;
                 }
 
-                if (item.Status == AVPlayerItemStatus.Failed) Log.Error($"Failed to play {Path}");
-                else Log.Error($"An error occured during playing {Path}");
+                if (item.Status == AVPlayerItemStatus.Failed) Log.For(this).Error(null, $"Failed to play {Path}");
+                else Log.For(this).Error(null, $"An error occured during playing {Path}");
 
                 RetryToDownloadTrack();
             }
@@ -74,7 +74,7 @@
             {
                 if (err?.Description.HasValue() == true)
                 {
-                    Log.Error(err.Description);
+                    Log.For(this).Error(null, err.Description);
                     ShouldDisposeView = true;
                     Dispose();
                     return;
