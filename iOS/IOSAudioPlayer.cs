@@ -10,6 +10,7 @@
     {
         AVPlayer AvPlayer;
         AVPlayerItem AvPlayerItem;
+        NSObject NotificationCenterToken;
         NSUrl DownloadedFile;
         bool ShouldDisposeView;
 
@@ -52,7 +53,7 @@
 
             AvPlayer = new AVPlayer(AvPlayerItem) { Volume = 1.0f };
 
-            NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, notification => Thread.UI.Post(() => Dispose()), AvPlayerItem);
+            NotificationCenterToken = NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, notification => Thread.UI.Post(() => Dispose()), AvPlayerItem);
             AvPlayerItem.AddObserver(Self, "status", 0, IntPtr.Zero);
         }
 
@@ -91,9 +92,16 @@
         {
             if (ShouldDisposeView) base.Dispose(disposing);
 
+            NSNotificationCenter.DefaultCenter.RemoveObserver(NotificationCenterToken);
+            AvPlayerItem.RemoveObserver(Self, "status");
+
             Stop();
+
             AvPlayer.Dispose();
+            AvPlayer = null;
+
             AvPlayerItem.Dispose();
+            AvPlayerItem = null;
         }
     }
 }
