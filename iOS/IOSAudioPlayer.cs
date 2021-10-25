@@ -8,11 +8,13 @@
 
     internal class IOSAudioPlayer : UIView
     {
-        AVPlayer AvPlayer;
-        AVPlayerItem AvPlayerItem;
-        NSObject NotificationCenterToken;
+        AVPlayerItem PlayerItem;
+        AVPlayer Player;
         NSUrl DownloadedFile;
         bool ShouldDisposeView;
+
+        IDisposable DidPlayToEndTimeObservation;
+        IDisposable StatusObservation;
 
         public string Path { get; }
 
@@ -23,45 +25,40 @@
             InitializePlayer();
         }
 
-        public override void ObserveValue(NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)
-        {
-            if (ofObject is AVPlayerItem item && keyPath == "status")
-            {
-                if (item.Status == AVPlayerItemStatus.ReadyToPlay)
-                {
-                    try { Audio.ConfigureAudio(AVAudioSessionCategory.Playback); }
-                    catch { }
-
-                    AvPlayer?.Play();
-                    return;
-                }
-
-                if (item.Status == AVPlayerItemStatus.Failed) Log.For(this).Error($"Failed to play {Path}");
-                else Log.For(this).Error($"An error occured during playing {Path}");
-
-                RetryToDownloadTrack();
-            }
-        }
-
         void InitializePlayer()
         {
             ShouldDisposeView = true;
 
-            if (DownloadedFile != null) AvPlayerItem = new AVPlayerItem(DownloadedFile);
-            else if (Path.IsUrl()) AvPlayerItem = new AVPlayerItem(new NSUrl(Path));
-            else AvPlayerItem = new AVPlayerItem(AVAsset.FromUrl(NSUrl.FromString("file://" + IO.File(Path).FullName)));
+            if (DownloadedFile != null) PlayerItem = new AVPlayerItem(DownloadedFile);
+            else if (Path.IsUrl()) PlayerItem = new AVPlayerItem(new NSUrl(Path));
+            else PlayerItem = new AVPlayerItem(AVAsset.FromUrl(NSUrl.FromString("file://" + IO.File(Path).FullName)));
 
-            AvPlayer = new AVPlayer(AvPlayerItem) { Volume = 1.0f };
+            Player = new AVPlayer(PlayerItem) { Volume = 1.0f };
 
-            NotificationCenterToken = NSNotificationCenter.DefaultCenter.AddObserver(AVPlayerItem.DidPlayToEndTimeNotification, notification => Thread.UI.Post(() => Dispose()), AvPlayerItem);
-            AvPlayerItem.AddObserver(Self, "status", 0, IntPtr.Zero);
+            DidPlayToEndTimeObservation = AVPlayerItem.Notifications.ObserveDidPlayToEndTime(PlayerItem, (_, _) => Thread.UI.Post(() => Dispose()));
+            PlayerItem.AddObserver(nameof(AVPlayerItem.Status), 0, _ =>
+            {
+                if (PlayerItem.Status == AVPlayerItemStatus.ReadyToPlay)
+                {
+                    try { Audio.ConfigureAudio(AVAudioSessionCategory.Playback); }
+                    catch { }
+
+                    Player?.Play();
+                    return;
+                }
+
+                if (PlayerItem.Status == AVPlayerItemStatus.Failed) Log.For(this).Error($"Failed to play {Path}");
+                else Log.For(this).Error($"An error occured during playing {Path}");
+
+                RetryToDownloadTrack();
+            });
         }
 
         void Stop()
         {
             DownloadedFile = null;
-            AvPlayer.Pause();
-            AvPlayer.Seek(CoreMedia.CMTime.Zero);
+            Player?.Pause();
+            Player?.Seek(CoreMedia.CMTime.Zero);
         }
 
         void RetryToDownloadTrack()
@@ -92,16 +89,16 @@
         {
             if (ShouldDisposeView) base.Dispose(disposing);
 
-            NSNotificationCenter.DefaultCenter.RemoveObserver(NotificationCenterToken);
-            AvPlayerItem.RemoveObserver(Self, "status");
+            DidPlayToEndTimeObservation?.Dispose();
+            StatusObservation?.Dispose();
 
             Stop();
 
-            AvPlayer.Dispose();
-            AvPlayer = null;
+            PlayerItem?.Dispose();
+            PlayerItem = null;
 
-            AvPlayerItem.Dispose();
-            AvPlayerItem = null;
+            Player?.Dispose();
+            Player = null;
         }
     }
 }
