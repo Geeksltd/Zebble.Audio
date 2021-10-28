@@ -106,8 +106,6 @@
                 Player.FinishedPlaying -= Player_FinishedPlaying;
             }
 
-            try { Player?.Stop(); } catch { }
-
             Player?.Dispose();
             Player = null;
         }
