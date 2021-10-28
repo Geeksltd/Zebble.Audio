@@ -35,10 +35,14 @@
 
             Player = new AVPlayer(PlayerItem) { Volume = 1.0f };
 
-            DidPlayToEndTimeObservation = AVPlayerItem.Notifications.ObserveDidPlayToEndTime(PlayerItem, (_, _) => Thread.UI.Post(() => Dispose()));
-            PlayerItem.AddObserver(nameof(AVPlayerItem.Status), 0, _ =>
+            DidPlayToEndTimeObservation = AVPlayerItem.Notifications.ObserveDidPlayToEndTime(PlayerItem, (_, _) =>
             {
-                if (PlayerItem.Status == AVPlayerItemStatus.ReadyToPlay)
+                Thread.UI.Post(() => Dispose());
+            });
+
+            StatusObservation = PlayerItem.AddObserver(nameof(AVPlayerItem.Status), 0, _ =>
+            {
+                if (PlayerItem?.Status == AVPlayerItemStatus.ReadyToPlay)
                 {
                     try { Audio.ConfigureAudio(AVAudioSessionCategory.Playback); }
                     catch { }
@@ -47,7 +51,7 @@
                     return;
                 }
 
-                if (PlayerItem.Status == AVPlayerItemStatus.Failed) Log.For(this).Error($"Failed to play {Path}");
+                if (PlayerItem?.Status == AVPlayerItemStatus.Failed) Log.For(this).Error($"Failed to play {Path}");
                 else Log.For(this).Error($"An error occured during playing {Path}");
 
                 RetryToDownloadTrack();
@@ -90,7 +94,10 @@
             if (ShouldDisposeView) base.Dispose(disposing);
 
             DidPlayToEndTimeObservation?.Dispose();
+            DidPlayToEndTimeObservation = null;
+
             StatusObservation?.Dispose();
+            StatusObservation = null;
 
             Stop();
 
