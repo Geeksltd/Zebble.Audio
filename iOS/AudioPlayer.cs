@@ -3,7 +3,6 @@
     using AVFoundation;
     using Foundation;
     using System;
-    using System.IO;
     using System.Threading.Tasks;
     using Olive;
 
@@ -23,6 +22,8 @@
         {
             try
             {
+                Dispose();
+
                 Player = new AVAudioPlayer(url, "wav", out var err) { Volume = 1.0F };
                 if (err?.Description.HasValue() == true) return false;
             }
@@ -99,18 +100,16 @@
 
         public void Dispose()
         {
-            Thread.UI.Post(() =>
+            if (Player != null)
             {
-                var player = Player;
-                Player = null;
-                if (player == null) return;
+                Player.DecoderError -= Player_DecoderError;
+                Player.FinishedPlaying -= Player_FinishedPlaying;
+            }
 
-                player.DecoderError -= Player_DecoderError;
-                player.FinishedPlaying -= Player_FinishedPlaying;
+            try { Player?.Stop(); } catch { }
 
-                try { player.Stop(); } catch { }
-                player.Dispose();
-            });
+            Player?.Dispose();
+            Player = null;
         }
     }
 }
