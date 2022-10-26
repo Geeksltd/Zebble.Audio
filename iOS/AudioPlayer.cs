@@ -14,7 +14,7 @@
 
         public Task<bool> PlayFile(string file)
         {
-            var url = new NSUrl(Device.IO.AbsolutePath(file));
+            var url = IO.AbsolutePath(file).ToNsUrl();
             return PlayFile(url);
         }
 
@@ -46,18 +46,9 @@
 
         public Task PlayStream(string url)
         {
-            // TODO: Implement it using AVPlayer in a way to handle error and completion events.
-            //StreamPlayer = new AVPlayer(NSUrl.FromString(File));
-            //StreamPlayer.CurrentItem.AddObserver(...)
-            //StreamPlayer.Play();
-            //--->
-            //Implemented but it has some problems yet.
-            //StreamPlayer = new IOSAudioPlayer(File);
-
             var result = new TaskCompletionSource<bool>();
 
-            // Workaround for now:
-            var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(new NSUrl(url), new NSUrlDownloadSessionResponse((u, response, err) =>
+            var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(url.ToNsUrl(), new NSUrlDownloadSessionResponse((u, response, err) =>
             {
                 if (err?.Description.HasValue() == true)
                 {

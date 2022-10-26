@@ -30,8 +30,8 @@
             ShouldDisposeView = true;
 
             if (DownloadedFile != null) PlayerItem = new AVPlayerItem(DownloadedFile);
-            else if (Path.IsUrl()) PlayerItem = new AVPlayerItem(new NSUrl(Path));
-            else PlayerItem = new AVPlayerItem(AVAsset.FromUrl(NSUrl.FromString("file://" + IO.File(Path).FullName)));
+            else if (Path.IsUrl()) PlayerItem = new AVPlayerItem(Path.ToNsUrl());
+            else PlayerItem = new AVPlayerItem(AVAsset.FromUrl(("file://" + IO.File(Path).FullName).ToNsUrl()));
 
             Player = new AVPlayer(PlayerItem) { Volume = 1.0f };
 
@@ -72,7 +72,7 @@
             ShouldDisposeView = false;
             Dispose();
 
-            var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(new NSUrl(Path), new NSUrlDownloadSessionResponse((url, response, err) =>
+            var downloadTask = NSUrlSession.SharedSession.CreateDownloadTask(Path.ToNsUrl(), new NSUrlDownloadSessionResponse((url, response, err) =>
             {
                 if (err?.Description.HasValue() == true)
                 {
