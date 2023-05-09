@@ -1,4 +1,10 @@
-﻿namespace Zebble.Device
+﻿using Android;
+using Android.App;
+
+[assembly: UsesPermission(Manifest.Permission.RecordAudio)]
+[assembly: UsesPermission(Manifest.Permission.ModifyAudioSettings)]
+
+namespace Zebble.Device
 {
     using Android.Media;
     using System;
@@ -12,27 +18,31 @@
         static MediaRecorder Recorder;
         static FileInfo Recording;
 
-        public static Task StartRecording(OnError errorAction = OnError.Toast)
+        public static async Task StartRecording(OnError errorAction = OnError.Toast)
         {
             try
             {
+                if (await Permission.RecordAudio.IsRequestGranted())
+                {
+                    return;
+                }
+
                 if (Recording?.Exists() == true)
                     lock (Recording.GetSyncLock())
                         Recording.Delete();
 
-                var newFile = $"Myfile{DateTime.UtcNow.ToString("yyyyMMddHHmmss")}.wav";
+                var newFile = $"Myfile{DateTime.UtcNow:yyyyMMddHHmmss}.wav";
                 Recording = IO.CreateTempDirectory().GetFile(newFile);
                 lock (Recording.GetSyncLock())
                     Recording.Delete();
 
                 CreateRecorder();
                 Recorder.Start();
-                return Task.CompletedTask;
             }
-            catch (Exception ex) { return errorAction.Apply(ex); }
+            catch (Exception ex) { await errorAction.Apply(ex); }
         }
 
-        public static byte[] RecordedBytes => Recording?.ReadAllBytes() ?? new byte[0];
+        public static byte[] RecordedBytes => Recording?.Exists() == true ? Recording?.ReadAllBytes() : Array.Empty<byte>();
 
         public static Task<byte[]> StopRecording()
         {
