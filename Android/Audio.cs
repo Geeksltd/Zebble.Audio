@@ -22,7 +22,7 @@ namespace Zebble.Device
         {
             try
             {
-                if (await Permission.RecordAudio.IsRequestGranted())
+                if (await Permission.RecordAudio.IsRequestGranted() == false)
                 {
                     return;
                 }
