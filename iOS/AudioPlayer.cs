@@ -37,7 +37,7 @@
 
             if (Player.PrepareToPlay())
             {
-                Audio.ConfigureAudio(AVAudioSessionCategory.Playback);
+                Audio.ConfigureAudio(AVAudioSessionCategory.Ambient);
                 var result = Player.Play();
                 return await Ended.Task;
             }
