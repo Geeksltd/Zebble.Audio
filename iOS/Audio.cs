@@ -40,7 +40,7 @@
         {
             var session = AVAudioSession.SharedInstance();
 
-            var err = session.SetCategory(mode);
+            var err = session.SetCategory(mode, AVAudioSessionCategoryOptions.DuckOthers);
             if (err != null)
                 throw new Exception("Failed to initiate the recorder: " + err.Description);
 
