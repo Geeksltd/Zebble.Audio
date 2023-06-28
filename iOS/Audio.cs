@@ -37,15 +37,12 @@
         }
 
         public static void AcquireSession(AVAudioSessionCategory mode)
-            => ConfigureSession(mode, AVAudioSessionCategoryOptions.DuckOthers, active: true);
+            => ConfigureSession(mode, AVAudioSessionCategoryOptions.DuckOthers);
 
         public static void ReleaseSession()
-            => ConfigureSession(AVAudioSessionCategory.Playback, AVAudioSessionCategoryOptions.MixWithOthers, active: false);
+            => ConfigureSession(AVAudioSessionCategory.Playback, AVAudioSessionCategoryOptions.MixWithOthers);
 
-        static void ConfigureSession(
-            AVAudioSessionCategory mode,
-            AVAudioSessionCategoryOptions options,
-            bool active)
+        static void ConfigureSession(AVAudioSessionCategory mode, AVAudioSessionCategoryOptions options)
         {
             var session = AVAudioSession.SharedInstance();
 
@@ -53,7 +50,7 @@
             if (err != null)
                 throw new Exception("Failed to initiate the recorder: " + err.Description);
 
-            err = session.SetActive(active);
+            err = session.SetActive(beActive: true);
             if (err != null)
                 throw new Exception("Failed to activate the recorder: " + err.Description);
         }
