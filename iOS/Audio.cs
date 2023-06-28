@@ -36,31 +36,31 @@
             catch (Exception ex) { await errorAction.Apply(ex); }
         }
 
-        public static void ConfigureSession(AVAudioSessionCategory mode)
+        public static void AcquireSession(AVAudioSessionCategory mode)
+            => ConfigureSession(mode, AVAudioSessionCategoryOptions.DuckOthers, active: true);
+
+        public static void ReleaseSession()
+            => ConfigureSession(default, AVAudioSessionCategoryOptions.MixWithOthers, active: false);
+
+        static void ConfigureSession(
+            AVAudioSessionCategory mode,
+            AVAudioSessionCategoryOptions options,
+            bool active)
         {
             var session = AVAudioSession.SharedInstance();
 
-            var err = session.SetCategory(mode, AVAudioSessionCategoryOptions.DuckOthers);
+            var err = session.SetCategory(mode, options);
             if (err != null)
                 throw new Exception("Failed to initiate the recorder: " + err.Description);
 
-            err = session.SetActive(beActive: true);
-            if (err != null)
-                throw new Exception("Failed to activate the recorder: " + err.Description);
-        }
-
-        public static void ReleaseSession()
-        {
-            var session = AVAudioSession.SharedInstance();
-
-            var err = session.SetActive(beActive: false);
+            err = session.SetActive(active);
             if (err != null)
                 throw new Exception("Failed to activate the recorder: " + err.Description);
         }
 
         static void CreateRecorder()
         {
-            ConfigureSession(AVAudioSessionCategory.PlayAndRecord);
+            AcquireSession(AVAudioSessionCategory.PlayAndRecord);
 
             Recorder = AVAudioRecorder.Create(NSUrl.FromFilename(Recording.FullName), GetSettings(), out var err);
             if (err != null) throw new Exception("Could not create a recorder because: " + err.Description);

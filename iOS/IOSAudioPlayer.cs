@@ -44,7 +44,7 @@
             {
                 if (PlayerItem?.Status == AVPlayerItemStatus.ReadyToPlay)
                 {
-                    try { Audio.ConfigureSession(AVAudioSessionCategory.Playback); }
+                    try { Audio.AcquireSession(AVAudioSessionCategory.Playback); }
                     catch { }
 
                     Player?.Play();
