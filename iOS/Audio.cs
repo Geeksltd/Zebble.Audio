@@ -40,7 +40,7 @@
             => ConfigureSession(mode, AVAudioSessionCategoryOptions.DuckOthers, active: true);
 
         public static void ReleaseSession()
-            => ConfigureSession(default, AVAudioSessionCategoryOptions.MixWithOthers, active: false);
+            => ConfigureSession(AVAudioSessionCategory.Playback, AVAudioSessionCategoryOptions.MixWithOthers, active: false);
 
         static void ConfigureSession(
             AVAudioSessionCategory mode,
