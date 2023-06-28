@@ -36,7 +36,7 @@
             catch (Exception ex) { await errorAction.Apply(ex); }
         }
 
-        public static void ConfigureAudio(AVAudioSessionCategory mode)
+        public static void ConfigureSession(AVAudioSessionCategory mode)
         {
             var session = AVAudioSession.SharedInstance();
 
@@ -49,9 +49,18 @@
                 throw new Exception("Failed to activate the recorder: " + err.Description);
         }
 
+        public static void ReleaseSession()
+        {
+            var session = AVAudioSession.SharedInstance();
+
+            var err = session.SetActive(beActive: false);
+            if (err != null)
+                throw new Exception("Failed to activate the recorder: " + err.Description);
+        }
+
         static void CreateRecorder()
         {
-            ConfigureAudio(AVAudioSessionCategory.PlayAndRecord);
+            ConfigureSession(AVAudioSessionCategory.PlayAndRecord);
 
             Recorder = AVAudioRecorder.Create(NSUrl.FromFilename(Recording.FullName), GetSettings(), out var err);
             if (err != null) throw new Exception("Could not create a recorder because: " + err.Description);

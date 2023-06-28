@@ -37,7 +37,7 @@
 
             if (Player.PrepareToPlay())
             {
-                Audio.ConfigureAudio(AVAudioSessionCategory.Playback);
+                Audio.ConfigureSession(AVAudioSessionCategory.Playback);
                 var result = Player.Play();
                 return await Ended.Task;
             }
@@ -80,6 +80,7 @@
         void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
         {
             Ended.TrySetResult(true);
+            Audio.ReleaseSession();
             Completed.Raise().RunInParallel();
         }
 
