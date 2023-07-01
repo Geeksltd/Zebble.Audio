@@ -11,6 +11,8 @@ namespace Zebble.Device
     using System.IO;
     using System.Threading.Tasks;
     using Olive;
+    using Android.OS;
+    using Android.Runtime;
 
     static partial class Audio
     {
@@ -37,6 +39,8 @@ namespace Zebble.Device
                     Recording.Delete();
 
                 CreateRecorder();
+
+                RequestFocus(AudioFocus.Gain);
                 Recorder.Start();
             }
             catch (Exception ex) { await errorAction.Apply(ex); }
@@ -46,7 +50,12 @@ namespace Zebble.Device
 
         public static Task<byte[]> StopRecording()
         {
-            try { Recorder?.Stop(); return Task.FromResult(RecordedBytes); }
+            try
+            {
+                Recorder?.Stop();
+                AbandonFocus();
+                return Task.FromResult(RecordedBytes);
+            }
             finally { Recorder?.Release(); Recorder = null; }
         }
 
@@ -62,6 +71,71 @@ namespace Zebble.Device
             Recorder.SetAudioSamplingRate(AUDIO_SAMPLING_RATE);
             Recorder.SetOutputFile(Recording.FullName);
             Recorder.Prepare();
+        }
+
+        static AudioFocusRequestClass FocusRequest;
+
+        public static bool RequestFocus(AudioFocus focus)
+        {
+            var audioManager = AudioManager.FromContext(UIRuntime.AppContext);
+            if (audioManager is null) return false;
+
+            AbandonFocus();
+
+            try
+            {
+                AudioFocusRequest requestResult;
+
+                //if (Build.VERSION.SdkInt > BuildVersionCodes.O)
+                //{
+                //    var attributes = new AudioAttributes.Builder()
+                //        .SetUsage(AudioUsageKind.Media)
+                //        .SetContentType(AudioContentType.Speech)
+                //        .Build();
+
+                //    FocusRequest = new AudioFocusRequestClass.Builder(focus)
+                //        .SetAudioAttributes(attributes)
+                //        .SetAcceptsDelayedFocusGain(true)
+                //        .Build();
+
+                //    requestResult = audioManager.RequestAudioFocus(FocusRequest);
+                //}
+                //else
+                    requestResult = audioManager.RequestAudioFocus(null, Android.Media.Stream.Music, focus);
+
+                return requestResult == AudioFocusRequest.Granted;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public static bool AbandonFocus()
+        {
+            var audioManager = AudioManager.FromContext(UIRuntime.AppContext);
+            if (audioManager is null) return false;
+
+            AudioFocusRequest requestResult;
+
+            try
+            {
+                //if (Build.VERSION.SdkInt > BuildVersionCodes.O)
+                //{
+                //    if (FocusRequest is null) return true;
+
+                //    requestResult = audioManager.AbandonAudioFocusRequest(FocusRequest);
+                //    FocusRequest = null;
+                //}
+                //else
+                    requestResult = audioManager.AbandonAudioFocus(null);
+
+                return requestResult == AudioFocusRequest.Granted;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

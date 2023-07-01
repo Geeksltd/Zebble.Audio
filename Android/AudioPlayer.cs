@@ -21,6 +21,7 @@ namespace Zebble.Device
         Task StopPlaying()
         {
             Player?.Stop();
+            Audio.AbandonFocus();
             Thread.Pool.RunAction(() => Ended.TrySetResult(false));
             return Task.CompletedTask;
         }
@@ -28,7 +29,8 @@ namespace Zebble.Device
         public async Task<bool> PlayFile(string file)
         {
             await SetSource($"file://{IO.AbsolutePath(file)}");
-            Player.Start();
+
+            Start();
 
             return await Ended.Task;
         }
@@ -43,6 +45,12 @@ namespace Zebble.Device
                 Player.SetAudioAttributes(attributes);
             }
 
+            Start();
+        }
+
+        void Start()
+        {
+            Audio.RequestFocus(AudioFocus.GainTransientMayDuck);
             Player.Start();
         }
 
@@ -63,17 +71,21 @@ namespace Zebble.Device
 
         void Player_Completion(object sender, EventArgs e) => Thread.Pool.RunAction(async () =>
         {
+            Audio.AbandonFocus();
             Ended.TrySetResult(true);
             await Completed.Raise();
         });
 
         void Player_Error(object sender, MediaPlayer.ErrorEventArgs e)
         {
+            Audio.AbandonFocus();
             Thread.Pool.RunAction(() => Ended.TrySetException(new Exception("Failed to play audio > " + e.What)));
         }
 
         public void Dispose()
         {
+            Audio.AbandonFocus();
+
             var player = Player;
             Player = null;
             if (player == null) return;
