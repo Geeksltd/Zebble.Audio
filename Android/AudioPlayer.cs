@@ -13,7 +13,6 @@ namespace Zebble.Device
         public AudioPlayer()
         {
             Player = new MediaPlayer();
-            Player.SetVolume(1.0f, 1.0f);
             Player.Completion += Player_Completion;
             Player.Error += Player_Error;
         }
@@ -62,6 +61,7 @@ namespace Zebble.Device
                 Player.Reset();
                 await Player.SetDataSourceAsync(Renderer.Context, Android.Net.Uri.Parse(url));
                 Player.Prepare();
+                Player.SetVolume(1.0f, 1.0f);
             }
             catch (Exception ex)
             {
