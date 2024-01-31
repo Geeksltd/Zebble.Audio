@@ -37,16 +37,10 @@
         }
 
         public static void AcquireSession()
-            => ConfigureSession(AVAudioSessionCategoryOptions.DuckOthers);
-
-        public static void ReleaseSession()
-            => ConfigureSession(AVAudioSessionCategoryOptions.MixWithOthers);
-
-        static void ConfigureSession(AVAudioSessionCategoryOptions options)
         {
             var session = AVAudioSession.SharedInstance();
 
-            var err = session.SetCategory(AVAudioSessionCategory.PlayAndRecord, options);
+            var err = session.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.InterruptSpokenAudioAndMixWithOthers | AVAudioSessionCategoryOptions.DefaultToSpeaker);
             if (err != null)
                 Log.For(typeof(Audio)).Error("Failed to initiate the recorder: " + err.Description);
 

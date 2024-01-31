@@ -79,15 +79,13 @@
 
         void Player_FinishedPlaying(object sender, AVStatusEventArgs e)
         {
-            Ended.TrySetResult(true);
-            Audio.ReleaseSession();
+            Ended.TrySetResult(true);            
             Completed.Raise().RunInParallel();
         }
 
         public Task StopPlaying()
         {
             Player?.Stop();
-            Audio.ReleaseSession();
             return Task.CompletedTask;
         }
 
