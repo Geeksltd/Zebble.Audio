@@ -36,31 +36,31 @@
             catch (Exception ex) { await errorAction.Apply(ex); }
         }
 
-        public static void AcquireSession(AVAudioSessionCategory mode)
-            => ConfigureSession(mode, AVAudioSessionCategoryOptions.DuckOthers);
+        public static void AcquireSession()
+            => ConfigureSession(AVAudioSessionCategoryOptions.DuckOthers);
 
         public static void ReleaseSession()
-            => ConfigureSession(AVAudioSessionCategory.Playback, AVAudioSessionCategoryOptions.MixWithOthers);
+            => ConfigureSession(AVAudioSessionCategoryOptions.MixWithOthers);
 
-        static void ConfigureSession(AVAudioSessionCategory mode, AVAudioSessionCategoryOptions options)
+        static void ConfigureSession(AVAudioSessionCategoryOptions options)
         {
             var session = AVAudioSession.SharedInstance();
 
-            var err = session.SetCategory(mode, options);
+            var err = session.SetCategory(AVAudioSessionCategory.PlayAndRecord, options);
             if (err != null)
-                throw new Exception("Failed to initiate the recorder: " + err.Description);
+                Log.For(typeof(Audio)).Error("Failed to initiate the recorder: " + err.Description);
 
             err = session.SetActive(beActive: true);
             if (err != null)
-                throw new Exception("Failed to activate the recorder: " + err.Description);
+                Log.For(typeof(Audio)).Error("Failed to activate the recorder: " + err.Description);
         }
 
         static void CreateRecorder()
         {
-            AcquireSession(AVAudioSessionCategory.PlayAndRecord);
+            AcquireSession();
 
             Recorder = AVAudioRecorder.Create(NSUrl.FromFilename(Recording.FullName), GetSettings(), out var err);
-            if (err != null) throw new Exception("Could not create a recorder because: " + err.Description);
+            if (err != null) Log.For(typeof(Audio)).Error("Could not create a recorder because: " + err.Description);
         }
 
         public static Task<byte[]> StopRecording() { Recorder?.Stop(); return Task.FromResult(RecordedBytes); }

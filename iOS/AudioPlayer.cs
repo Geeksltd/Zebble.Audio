@@ -37,7 +37,7 @@
 
             if (Player.PrepareToPlay())
             {
-                Audio.AcquireSession(AVAudioSessionCategory.Playback);
+                Audio.AcquireSession();
                 var result = Player.Play();
                 return await Ended.Task;
             }
