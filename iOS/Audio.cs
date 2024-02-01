@@ -36,17 +36,21 @@
             catch (Exception ex) { await errorAction.Apply(ex); }
         }
 
+        [Obsolete]
+        public static void ReleaseSession() { }
+
         public static void AcquireSession()
         {
             var session = AVAudioSession.SharedInstance();
 
-            var err = session.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.InterruptSpokenAudioAndMixWithOthers | AVAudioSessionCategoryOptions.DefaultToSpeaker);
-            if (err != null)
-                Log.For(typeof(Audio)).Error("Failed to initiate the recorder: " + err.Description);
+            var err = session.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.InterruptSpokenAudioAndMixWithOthers);
+            if (err != null) Log.For(typeof(Audio)).Error("Failed to initiate the recorder: " + err.Description);
+
+            session.OverrideOutputAudioPort(AVAudioSessionPortOverride.Speaker, out err);
+            if (err != null) Log.For(typeof(Audio)).Error("Failed to switch to speaker: " + err.Description);
 
             err = session.SetActive(beActive: true);
-            if (err != null)
-                Log.For(typeof(Audio)).Error("Failed to activate the recorder: " + err.Description);
+            if (err != null) Log.For(typeof(Audio)).Error("Failed to activate the recorder: " + err.Description);
         }
 
         static void CreateRecorder()
