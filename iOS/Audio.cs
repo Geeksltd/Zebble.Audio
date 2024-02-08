@@ -46,7 +46,7 @@
             var err = session.SetCategory(AVAudioSessionCategory.PlayAndRecord, AVAudioSessionCategoryOptions.MixWithOthers);
             if (err != null) Log.For(typeof(Audio)).Error("Failed to initiate the recorder: " + err.Description);
 
-            session.OverrideOutputAudioPort(AVAudioSessionPortOverride.Speaker, out err);
+            session.OverrideOutputAudioPort(AVAudioSessionPortOverride.None, out err);
             if (err != null) Log.For(typeof(Audio)).Error("Failed to switch to speaker: " + err.Description);
 
             err = session.SetActive(beActive: true);
