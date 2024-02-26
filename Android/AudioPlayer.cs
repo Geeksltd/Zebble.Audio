@@ -8,7 +8,7 @@ namespace Zebble.Device
     {
         MediaPlayer Player;
 
-        static BaseThread AudioThread => Thread.Pool;
+        static BaseThread AudioThread => Thread.UI;
 
         public AudioPlayer()
         {
