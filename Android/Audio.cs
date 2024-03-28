@@ -12,7 +12,6 @@ namespace Zebble.Device
     using System.Threading.Tasks;
     using Olive;
     using Android.OS;
-    using Android.Runtime;
 
     static partial class Audio
     {
@@ -86,29 +85,25 @@ namespace Zebble.Device
             {
                 AudioFocusRequest requestResult;
 
-                //if (Build.VERSION.SdkInt > BuildVersionCodes.O)
-                //{
-                //    var attributes = new AudioAttributes.Builder()
-                //        .SetUsage(AudioUsageKind.Media)
-                //        .SetContentType(AudioContentType.Speech)
-                //        .Build();
+                if (OS.IsAtLeast(BuildVersionCodes.O))
+                {
+                    var attributes = new AudioAttributes.Builder()
+                        .SetUsage(AudioUsageKind.Media)
+                        .SetContentType(AudioContentType.Speech)
+                        .Build();
 
-                //    FocusRequest = new AudioFocusRequestClass.Builder(focus)
-                //        .SetAudioAttributes(attributes)
-                //        .SetAcceptsDelayedFocusGain(true)
-                //        .Build();
+                    FocusRequest = new AudioFocusRequestClass.Builder(focus)
+                        .SetAudioAttributes(attributes)
+                        .SetAcceptsDelayedFocusGain(true)
+                        .Build();
 
-                //    requestResult = audioManager.RequestAudioFocus(FocusRequest);
-                //}
-                //else
-                    requestResult = audioManager.RequestAudioFocus(null, Android.Media.Stream.Music, focus);
+                    requestResult = audioManager.RequestAudioFocus(FocusRequest);
+                }
+                else requestResult = audioManager.RequestAudioFocus(null, Android.Media.Stream.Music, focus);
 
                 return requestResult == AudioFocusRequest.Granted;
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            catch { return false; }
         }
 
         public static bool AbandonFocus()
@@ -120,22 +115,18 @@ namespace Zebble.Device
 
             try
             {
-                //if (Build.VERSION.SdkInt > BuildVersionCodes.O)
-                //{
-                //    if (FocusRequest is null) return true;
+                if (OS.IsAtLeast(BuildVersionCodes.O))
+                {
+                    if (FocusRequest is null) return true;
 
-                //    requestResult = audioManager.AbandonAudioFocusRequest(FocusRequest);
-                //    FocusRequest = null;
-                //}
-                //else
-                    requestResult = audioManager.AbandonAudioFocus(null);
+                    requestResult = audioManager.AbandonAudioFocusRequest(FocusRequest);
+                    FocusRequest = null;
+                }
+                else requestResult = audioManager.AbandonAudioFocus(null);
 
                 return requestResult == AudioFocusRequest.Granted;
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            catch { return false; }
         }
     }
 }
