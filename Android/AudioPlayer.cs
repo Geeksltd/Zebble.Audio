@@ -6,6 +6,9 @@ namespace Zebble.Device
 {
     partial class AudioPlayer
     {
+        float Volume = 1.0f;
+        int StepCount = 10;
+        int StepDelay = 100;
         MediaPlayer Player;
 
         static BaseThread AudioThread => Thread.UI;
@@ -17,12 +20,33 @@ namespace Zebble.Device
             Player.Error += Player_Error;
         }
 
-        Task StopPlaying()
+        async Task FadeOut()
         {
+            if (!Player.IsPlaying)
+                return;
+
+            var volume = Volume;
+            int step = StepCount;
+            while (step >= 0 && Player.CurrentPosition < Player.Duration)
+            {
+                volume = volume * step / (float)StepCount;
+                Player.SetVolume(volume, volume);
+                await Task.Delay(StepDelay);
+                step--;
+            }
+        }
+
+        async Task StopPlaying()
+        {
+            try
+            {
+                await FadeOut();
+            }
+            catch { }
+
             Player?.Stop();
             Audio.AbandonFocus();
             Thread.Pool.RunAction(() => Ended.TrySetResult(false));
-            return Task.CompletedTask;
         }
 
         public async Task<bool> PlayFile(string file)
@@ -61,7 +85,7 @@ namespace Zebble.Device
                 Player.Reset();
                 await Player.SetDataSourceAsync(Renderer.Context, Android.Net.Uri.Parse(url));
                 Player.Prepare();
-                Player.SetVolume(1.0f, 1.0f);
+                Player.SetVolume(Volume, Volume);
             }
             catch (Exception ex)
             {

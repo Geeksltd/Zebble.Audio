@@ -53,7 +53,9 @@
 
             if (file.IsUrl()) await PlayStream(file);
             else await PlayFile(file);
+#if !ANDROID
             await Completed.RaiseOn(Thread.Pool);
+#endif
         }
     }
 }
