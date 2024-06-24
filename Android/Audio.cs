@@ -12,6 +12,8 @@ namespace Zebble.Device
     using System.Threading.Tasks;
     using Olive;
     using Android.OS;
+    using Java.Interop;
+    using Android.Runtime;
 
     static partial class Audio
     {
@@ -87,6 +89,12 @@ namespace Zebble.Device
 
                 if (OS.IsAtLeast(BuildVersionCodes.O))
                 {
+                    if (FocusRequest is not null)
+                    {
+                        audioManager.AbandonAudioFocusRequest(FocusRequest);
+                        FocusRequest = null;
+                    }
+
                     var attributes = new AudioAttributes.Builder()
                         .SetUsage(AudioUsageKind.Media)
                         .SetContentType(AudioContentType.Speech)
@@ -95,6 +103,7 @@ namespace Zebble.Device
                     FocusRequest = new AudioFocusRequestClass.Builder(focus)
                         .SetAudioAttributes(attributes)
                         .SetAcceptsDelayedFocusGain(true)
+                        .SetOnAudioFocusChangeListener(new AudioFocusChanged())
                         .Build();
 
                     requestResult = audioManager.RequestAudioFocus(FocusRequest);
@@ -127,6 +136,13 @@ namespace Zebble.Device
                 return requestResult == AudioFocusRequest.Granted;
             }
             catch { return false; }
+        }
+
+        class AudioFocusChanged : JavaObject, AudioManager.IOnAudioFocusChangeListener
+        {
+            public nint Handle => 0;
+
+            public void OnAudioFocusChange([GeneratedEnum] AudioFocus focusChange) { }
         }
     }
 }
