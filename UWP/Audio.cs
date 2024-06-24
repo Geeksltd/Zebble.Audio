@@ -15,8 +15,8 @@
         
         public static async Task StartRecording(OnError errorAction = OnError.Toast)
         {
-            try { await Thread.Pool.Run(() => DoStartRecording()); }
-            catch (Exception ex) { await errorAction.Apply(ex); }
+            try { await Thread.Pool.Run(DoStartRecording).ConfigureAwait(false); }
+            catch (Exception ex) { await errorAction.Apply(ex).ConfigureAwait(false); }
         }
 
         public static byte[] RecordedBytes => Buffer?.AsStreamForRead().ReadAllBytes() ?? new byte[0];

@@ -31,7 +31,7 @@ namespace Zebble.Device
             {
                 volume = volume * step / (float)StepCount;
                 Player.SetVolume(volume, volume);
-                await Task.Delay(StepDelay);
+                await Task.Delay(StepDelay).ConfigureAwait(false);
                 step--;
             }
         }
@@ -40,7 +40,7 @@ namespace Zebble.Device
         {
             try
             {
-                await FadeOut();
+                await FadeOut().ConfigureAwait(false);
             }
             catch { }
 
@@ -51,16 +51,16 @@ namespace Zebble.Device
 
         public async Task<bool> PlayFile(string file)
         {
-            await SetSource($"file://{IO.AbsolutePath(file)}");
+            await SetSource($"file://{IO.AbsolutePath(file)}").ConfigureAwait(false);
 
             Start();
 
-            return await Ended.Task;
+            return await Ended.Task.ConfigureAwait(false);
         }
 
         public async Task PlayStream(string url)
         {
-            await SetSource(url);
+            await SetSource(url).ConfigureAwait(false);
 
             if (OS.IsAtLeast(Android.OS.BuildVersionCodes.O))
             {
@@ -83,7 +83,7 @@ namespace Zebble.Device
             {
                 Player.Stop();
                 Player.Reset();
-                await Player.SetDataSourceAsync(Renderer.Context, Android.Net.Uri.Parse(url));
+                await Player.SetDataSourceAsync(Renderer.Context, Android.Net.Uri.Parse(url)).ConfigureAwait(false);
                 Player.Prepare();
                 Player.SetVolume(Volume, Volume);
             }
@@ -97,7 +97,7 @@ namespace Zebble.Device
         {
             Audio.AbandonFocus();
             Ended.TrySetResult(true);
-            await Completed.Raise();
+            await Completed.Raise().ConfigureAwait(false);
         });
 
         void Player_Error(object sender, MediaPlayer.ErrorEventArgs e)

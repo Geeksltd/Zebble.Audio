@@ -25,7 +25,7 @@ namespace Zebble.Device
         {
             try
             {
-                if (await Permission.RecordAudio.IsRequestGranted() == false)
+                if (await Permission.RecordAudio.IsRequestGranted().ConfigureAwait(false) == false)
                 {
                     return;
                 }
@@ -44,7 +44,7 @@ namespace Zebble.Device
                 RequestFocus(AudioFocus.Gain);
                 Recorder.Start();
             }
-            catch (Exception ex) { await errorAction.Apply(ex); }
+            catch (Exception ex) { await errorAction.Apply(ex).ConfigureAwait(false); }
         }
 
         public static byte[] RecordedBytes => Recording?.Exists() == true ? Recording?.ReadAllBytes() : Array.Empty<byte>();

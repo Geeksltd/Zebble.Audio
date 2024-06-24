@@ -18,7 +18,7 @@
         {
             try
             {
-                await StopRecording();
+                await StopRecording().ConfigureAwait(false);
 
                 if (Recording?.Exists() == true)
                     lock (Recording.GetSyncLock())
@@ -33,7 +33,7 @@
 
                 Recorder.Record();
             }
-            catch (Exception ex) { await errorAction.Apply(ex); }
+            catch (Exception ex) { await errorAction.Apply(ex).ConfigureAwait(false); }
         }
 
         [Obsolete]
