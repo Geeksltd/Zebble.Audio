@@ -138,10 +138,8 @@ namespace Zebble.Device
             catch { return false; }
         }
 
-        class AudioFocusChanged : JavaObject, AudioManager.IOnAudioFocusChangeListener
+        class AudioFocusChanged : Java.Lang.Object, AudioManager.IOnAudioFocusChangeListener
         {
-            public nint Handle => 0;
-
             public void OnAudioFocusChange([GeneratedEnum] AudioFocus focusChange) { }
         }
     }
