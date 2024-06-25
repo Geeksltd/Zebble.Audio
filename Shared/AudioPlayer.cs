@@ -28,7 +28,7 @@
             {
                 try
                 {
-                    await execution().ConfigureAwait(false);
+                    await execution();
                     task.TrySetResult(true);
                 }
                 catch (Exception ex)
@@ -36,7 +36,7 @@
                     if (errorAction == OnError.Throw) task.TrySetException(ex);
                     else
                     {
-                        await errorAction.Apply(ex, "Failed to play audio file").ConfigureAwait(false);
+                        await errorAction.Apply(ex, "Failed to play audio file");
                         task.TrySetResult(false);
                     }
                 }
@@ -47,14 +47,14 @@
 
         async Task DoPlay(string file)
         {
-            await Stop(OnError.Ignore).ConfigureAwait(false);
+            await Stop(OnError.Ignore);
 
             Ended = new TaskCompletionSource<bool>();
 
-            if (file.IsUrl()) await PlayStream(file).ConfigureAwait(false);
-            else await PlayFile(file).ConfigureAwait(false);
+            if (file.IsUrl()) await PlayStream(file);
+            else await PlayFile(file);
 #if !ANDROID
-            await Completed.RaiseOn(Thread.Pool).ConfigureAwait(false);
+            await Completed.RaiseOn(Thread.Pool);
 #endif
         }
     }

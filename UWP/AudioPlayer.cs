@@ -26,16 +26,16 @@
 
         public async Task<bool> PlayFile(string file)
         {
-            var storage = await Device.IO.File(file).ToStorageFile().ConfigureAwait(false);
+            var storage = await Device.IO.File(file).ToStorageFile();
             var source = Windows.Media.Core.MediaSource.CreateFromStorageFile(storage);
 
-            return await Play(source).ConfigureAwait(false);
+            return await Play(source);
         }
 
         public async Task PlayStream(string url)
         {
             var source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(url));
-            await Play(source).ConfigureAwait(false);
+            await Play(source);
         }
 
         async Task<bool> Play(Windows.Media.Playback.IMediaPlaybackSource source)
@@ -43,7 +43,7 @@
             Player.Source = source;
             Player.Play();
 
-            return await Ended.Task.ConfigureAwait(false);
+            return await Ended.Task;
         }
 
         void Player_MediaEnded(Windows.Media.Playback.MediaPlayer sender, object args)

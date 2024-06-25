@@ -39,7 +39,7 @@
             {
                 Audio.AcquireSession();
                 var result = Player.Play();
-                return await Ended.Task.ConfigureAwait(false);
+                return await Ended.Task;
             }
             else throw new Exception("Failed to play " + url);
         }
