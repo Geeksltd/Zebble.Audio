@@ -81,11 +81,14 @@ namespace Zebble.Device
         {
             try
             {
-                Player.Stop();
-                Player.Reset();
-                await Player.SetDataSourceAsync(Renderer.Context, Android.Net.Uri.Parse(url));
-                Player.Prepare();
-                Player.SetVolume(Volume, Volume);
+                await Thread.UI.Run(() =>
+                {
+                    Player.Stop();
+                    Player.Reset();
+                    Player.SetDataSource(Renderer.Context, Android.Net.Uri.Parse(url));
+                    Player.Prepare();
+                    Player.SetVolume(Volume, Volume);
+                });
             }
             catch (Exception ex)
             {
