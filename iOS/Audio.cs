@@ -43,7 +43,7 @@
         {
             var session = AVAudioSession.SharedInstance();
 
-            var err = session.SetCategory(AVAudioSessionCategory.Playback, AVAudioSessionCategoryOptions.AllowBluetooth | AVAudioSessionCategoryOptions.AllowBluetoothA2DP | AVAudioSessionCategoryOptions.MixWithOthers);
+            var err = session.SetCategory(AVAudioSessionCategory.Playback, AVAudioSessionCategoryOptions.MixWithOthers);
             if (err != null) Log.For(typeof(Audio)).Error("Failed to initiate the recorder: " + err.Description);
 
             session.OverrideOutputAudioPort(AVAudioSessionPortOverride.None, out err);
