@@ -67,6 +67,8 @@
             try { player.Pause(); } catch { }
 
             player.Dispose();
+			
+			GC.SuppressFinalize(this);
         }
 
         Task StopPlaying()

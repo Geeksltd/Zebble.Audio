@@ -37,7 +37,7 @@
 
             DidPlayToEndTimeObservation = AVPlayerItem.Notifications.ObserveDidPlayToEndTime(PlayerItem, (_, _) =>
             {
-                Thread.UI.Post(() => Dispose());
+                Thread.UI.Post(Dispose);
             });
 
             StatusObservation = PlayerItem.AddObserver(nameof(AVPlayerItem.Status), 0, _ =>

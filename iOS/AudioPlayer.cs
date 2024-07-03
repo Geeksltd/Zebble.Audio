@@ -101,6 +101,8 @@
 
             Player?.Dispose();
             Player = null;
+			
+			GC.SuppressFinalize(this);
         }
     }
 }

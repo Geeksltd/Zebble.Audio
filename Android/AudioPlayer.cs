@@ -130,6 +130,8 @@ namespace Zebble.Device
 
             if (Thread.UI.IsRunning()) kill();
             else Thread.UI.Post(kill);
+			
+			GC.SuppressFinalize(this);
         }
     }
 }
