@@ -23,15 +23,11 @@
 
         public async Task<bool> PlayFile(string file)
         {
-            var fileInfo = new FileInfo(file);
-            if (!fileInfo.Exists)
-                throw new FileNotFoundException("File not found", file);
-
-            var source = Windows.Media.Core.MediaSource.CreateFromUri(new Uri(fileInfo.FullName));
+            var storage = await IO.File(file).ToStorageFile();
+            var source = Windows.Media.Core.MediaSource.CreateFromStorageFile(storage);
 
             return await Play(source);
         }
-
 
         public async Task PlayStream(string url)
         {
