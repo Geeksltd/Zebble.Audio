@@ -1,7 +1,11 @@
 ﻿namespace Zebble.Device
 {
     using System;
+    using System.IO;
     using System.Threading.Tasks;
+    using Windows.Media.Capture;
+    using Windows.Media.MediaProperties;
+    using Windows.Storage.Streams;
 
     partial class AudioPlayer
     {
@@ -22,7 +26,7 @@
 
         public async Task<bool> PlayFile(string file)
         {
-            var storage = await IO.File(file).ToStorageFile();
+            var storage = await Device.IO.File(file).ToStorageFile();
             var source = Windows.Media.Core.MediaSource.CreateFromStorageFile(storage);
 
             return await Play(source);
